@@ -109,5 +109,3 @@ We use **cosine similarity** on 512-D embeddings.
 
 ---
 
-## Want me to deploy this as a Docker image and create a minimal frontend example?
-Reply: **"Dockerize and frontend"** and I'll add it.
