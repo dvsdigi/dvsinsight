@@ -72,23 +72,38 @@ async def fetch_student(student_id: str):
         data = response.json()
         
         # API might return a list or a single object.
-        # If it returns a list (since we used filter), we take the first one.
-        # Check for 'allStudent' key (based on API inspection)
+        # We need to find the matching student from the list if it's a list.
+        target_student = None
+        
+        all_students = []
         if isinstance(data, dict) and "allStudent" in data and isinstance(data["allStudent"], list):
-             if not data["allStudent"]:
-                raise HTTPException(status_code=404, detail="Student not found")
-             student_data = data["allStudent"][0]
+             all_students = data["allStudent"]
         elif isinstance(data, list):
-            if not data:
-                raise HTTPException(status_code=404, detail="Student not found")
-            student_data = data[0]
+             all_students = data
         elif isinstance(data, dict) and "data" in data and isinstance(data["data"], list):
-             # Common API pattern: { data: [...] }
-            if not data["data"]:
-                raise HTTPException(status_code=404, detail="Student not found")
-            student_data = data["data"][0]
-        else:
-            student_data = data
+             all_students = data["data"]
+        elif isinstance(data, dict):
+             # Single object? Check if it matches
+             sid = data.get("studentId") or data.get("id")
+             if sid == student_id:
+                 target_student = data
+
+        if not target_student and all_students:
+            # Filter client-side to be safe
+            for s in all_students:
+                sid = s.get("studentId") or s.get("id")
+                if sid == student_id:
+                    target_student = s
+                    break
+            
+            # If not found in list, but list is not empty, maybe we should just return 404?
+            # Or if the API was supposed to filter, maybe the first one IS the one? 
+            # But user says it's wrong. So explicit filtering is best.
+            
+        if not target_student:
+             raise HTTPException(status_code=404, detail=f"Student {student_id} not found in API response")
+             
+        student_data = target_student
 
         # Extract photo URL safely
         photo_data = student_data.get("studentImage")

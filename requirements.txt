@@ -12,3 +12,4 @@ onnxruntime
 pymongo
 requests
 jinja2
+cloudinary

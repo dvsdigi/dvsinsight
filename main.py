@@ -6,7 +6,7 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from routers import students, photos, enrollment
+from routers import students, photos, enrollment, gallery
 from insightface_engine import InsightFaceEngine
 
 app = FastAPI(title="InsightFace Photo Segregator")
@@ -17,6 +17,7 @@ engine = InsightFaceEngine()
 app.include_router(students.router, prefix="/students", tags=["students"])
 app.include_router(photos.router, prefix="/photos", tags=["photos"])
 app.include_router(enrollment.router, prefix="/enroll", tags=["enrollment"])
+app.include_router(gallery.router, prefix="/gallery", tags=["gallery"])
 
 # Mount static files (using local app/static directory)
 static_dir = os.path.join(os.path.dirname(__file__), "static")
