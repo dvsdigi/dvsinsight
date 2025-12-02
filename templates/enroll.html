@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Enrollment</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Student Enrollment</h1>
+        
+        <div class="search-section">
+            <input type="text" id="studentIdInput" placeholder="Enter Student ID">
+            <button id="fetchBtn">Fetch Details</button>
+        </div>
+
+        <div id="previewSection" class="hidden">
+            <h2>Student Preview</h2>
+            <div class="card">
+                <img id="previewImage" src="" alt="Student Photo">
+                <div class="info">
+                    <p><strong>ID:</strong> <span id="previewId"></span></p>
+                    <p><strong>Name:</strong> <span id="previewName"></span></p>
+                    <p><strong>School ID:</strong> <span id="previewSchoolId"></span></p>
+                </div>
+            </div>
+            <button id="enrollBtn" class="primary-btn">Enroll Student</button>
+        </div>
+
+        <div id="message" class="hidden"></div>
+    </div>
+
+    <script src="/static/js/enroll.js"></script>
+</body>
+</html>
