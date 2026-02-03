@@ -62,12 +62,22 @@ async def fetch_student(student_id: str):
     # Or if it's a direct resource: /students/{id}
     # Given the URL .../students, it's likely a list endpoint that accepts filters.
     
-    url = f"{EXTERNAL_API_BASE_URL}"
+    # Read from environment inside the function to ensure freshness
+    api_base_url = os.environ.get('EXTERNAL_API_BASE_URL', EXTERNAL_API_BASE_URL)
+    jwt_token = os.environ.get('JWT_TOKEN', JWT_TOKEN)
+    
+    # Clean up the base URL if it already has a query parameter
+    if "?" in api_base_url:
+        url = api_base_url.split("?")[0]
+    else:
+        url = api_base_url
+        
     params = {"studentId": student_id}
-    headers = {"Authorization": f"Bearer {JWT_TOKEN}"}
+    headers = {"Authorization": f"Bearer {jwt_token}"}
     
     try:
-        response = requests.get(url, headers=headers, params=params, timeout=10)
+        print(f"Calling External API: {url} with params {params}")
+        response = requests.get(url, headers=headers, params=params, timeout=15)
         response.raise_for_status()
         data = response.json()
         

@@ -2,7 +2,9 @@ from dotenv import load_dotenv
 import os
 
 # Load env vars before importing other modules that might use them
-load_dotenv()
+found_dotenv = load_dotenv(override=True)
+print(f"Loading .env file: {found_dotenv}")
+print(f"EXTERNAL_API_BASE_URL from env: {os.environ.get('EXTERNAL_API_BASE_URL')}")
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -34,3 +36,8 @@ async def startup_event():
     # Warmup model
     engine.prepare()
     print("InsightFace engine prepared.")
+    
+    # Debug env vars to file
+    with open("debug_env.txt", "w") as f:
+        f.write(f"EXTERNAL_API_BASE_URL: {os.environ.get('EXTERNAL_API_BASE_URL')}\n")
+        f.write(f"JWT_TOKEN prefix: {os.environ.get('JWT_TOKEN')[:10] if os.environ.get('JWT_TOKEN') else 'None'}\n")

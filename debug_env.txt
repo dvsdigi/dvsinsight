@@ -1,0 +1,2 @@
+EXTERNAL_API_BASE_URL: https://dvsserver-d7fk.onrender.com/api/v1/adminRoute/students
+JWT_TOKEN prefix: eyJhbGciOi
