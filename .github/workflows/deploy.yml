@@ -1,0 +1,66 @@
+name: AI Image Sorting CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: |
+          echo "EXTERNAL_API_BASE_URL=${{ secrets.EXTERNAL_API_BASE_URL }}" > .env
+          echo "JWT_TOKEN=${{ secrets.JWT_TOKEN }}" >> .env
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
+          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> .env
+          echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> .env
+          echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> .env
+
+      - name: Create project directory on VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            mkdir -p /root/image-sorter
+
+      - name: Transfer files to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "**,!.git/**,!venv/**"
+          target: "/root/image-sorter"
+
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /root/image-sorter
+            echo "Building Docker image..."
+            docker build -t imagesorter:latest . || { echo "Docker build failed"; exit 1; }
+            echo "Stopping existing container..."
+            docker stop imagesorter || true
+            echo "Removing existing container..."
+            docker rm imagesorter || true
+            echo "Starting new container..."
+            # Using --env-file .env to ensure secrets are active
+            docker run -d -p 8000:8000 --env-file .env --name imagesorter imagesorter:latest || { echo "Container start failed"; exit 1; }
+            echo "Checking status..."
+            docker ps | grep imagesorter
+            echo "Cleaning up..."
+            docker image prune -a -f
+            echo "Deployment completed successfully!"
